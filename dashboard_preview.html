@@ -1,0 +1,381 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>꼼즈앱 · 원장 대시보드</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Noto Sans KR', sans-serif;
+    background: #F2F2F7;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 24px 16px 48px;
+    min-height: 100vh;
+  }
+
+  .preview-label {
+    font-size: 12px;
+    color: #8E8E93;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    margin-bottom: 16px;
+    font-weight: 500;
+  }
+
+  .phone-frame {
+    background: #1C1C1E;
+    border-radius: 44px;
+    padding: 12px;
+    width: 100%;
+    max-width: 390px;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.2);
+  }
+
+  .phone-screen {
+    background: #F2F2F7;
+    border-radius: 36px;
+    overflow: hidden;
+    min-height: 700px;
+  }
+
+  .status-bar {
+    background: #fff;
+    padding: 14px 20px 8px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 12px;
+    font-weight: 600;
+    color: #000;
+  }
+
+  .topbar {
+    background: #fff;
+    padding: 8px 16px 12px;
+    display: flex;
+    align-items: center;
+    border-bottom: 0.5px solid #E5E5EA;
+    position: relative;
+  }
+
+  .topbar h1 {
+    font-size: 17px;
+    font-weight: 600;
+    color: #000;
+    position: absolute;
+    left: 50%;
+    transform: translateX(-50%);
+  }
+
+  .topbar .date {
+    font-size: 13px;
+    color: #8E8E93;
+    margin-left: auto;
+  }
+
+  .scroll-area {
+    padding: 16px 12px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .stat-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 8px;
+  }
+
+  .stat-card {
+    background: #fff;
+    border-radius: 12px;
+    padding: 12px;
+    text-align: center;
+  }
+
+  .stat-num { font-size: 24px; font-weight: 700; }
+  .stat-num.green { color: #34C759; }
+  .stat-num.red { color: #FF3B30; }
+  .stat-num.gray { color: #8E8E93; }
+  .stat-label { font-size: 11px; color: #8E8E93; margin-top: 3px; }
+
+  .card {
+    background: #fff;
+    border-radius: 12px;
+    padding: 14px 16px;
+  }
+
+  .section-title {
+    font-size: 11px;
+    font-weight: 600;
+    color: #8E8E93;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    margin-bottom: 12px;
+  }
+
+  .teacher-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 0;
+    border-bottom: 0.5px solid #E5E5EA;
+    cursor: pointer;
+  }
+  .teacher-row:last-child { border-bottom: none; }
+
+  .avatar {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 13px;
+    font-weight: 600;
+    flex-shrink: 0;
+  }
+  .av-green { background: #E8F9EF; color: #34C759; }
+  .av-red { background: #FFEBEA; color: #FF3B30; }
+  .av-gray { background: #F2F2F7; color: #8E8E93; }
+
+  .teacher-info { flex: 1; min-width: 0; }
+  .teacher-name { font-size: 14px; font-weight: 500; color: #000; }
+  .teacher-sub { font-size: 12px; color: #8E8E93; margin-top: 1px; }
+
+  .status-badge {
+    font-size: 11px;
+    padding: 3px 9px;
+    border-radius: 20px;
+    font-weight: 500;
+    white-space: nowrap;
+    flex-shrink: 0;
+  }
+  .badge-done { background: #E8F9EF; color: #34C759; }
+  .badge-none { background: #FFEBEA; color: #FF3B30; }
+  .badge-off { background: #F2F2F7; color: #8E8E93; }
+
+  .chevron {
+    font-size: 18px;
+    color: #C7C7CC;
+    margin-left: 2px;
+    transition: transform 0.2s;
+    flex-shrink: 0;
+  }
+
+  .detail-panel {
+    background: #F2F2F7;
+    border-radius: 10px;
+    padding: 4px 12px;
+    margin-top: 6px;
+    margin-bottom: 4px;
+    display: none;
+  }
+  .detail-panel.open { display: block; }
+
+  .detail-student {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    padding: 10px 0;
+    border-bottom: 0.5px solid #E5E5EA;
+  }
+  .detail-student:last-child { border-bottom: none; }
+
+  .ds-name { font-size: 13px; font-weight: 500; color: #000; }
+  .ds-feedback {
+    font-size: 12px;
+    color: #3C3C43;
+    margin-top: 3px;
+    line-height: 1.5;
+    max-width: 220px;
+  }
+  .ds-feedback.empty { color: #C7C7CC; }
+  .ds-time { font-size: 11px; color: #8E8E93; white-space: nowrap; margin-left: 8px; margin-top: 2px; flex-shrink: 0; }
+  .ds-time.warn { color: #FF3B30; }
+
+  .notice {
+    font-size: 12px;
+    color: #8E8E93;
+    text-align: center;
+    margin-top: 20px;
+    line-height: 1.6;
+  }
+</style>
+</head>
+<body>
+
+<p class="preview-label">꼼즈앱 MVP · 원장 대시보드 (원장용)</p>
+
+<div class="phone-frame">
+  <div class="phone-screen">
+
+    <div class="status-bar">
+      <span>9:41</span>
+      <span>●●●</span>
+    </div>
+
+    <div class="topbar">
+      <h1>원장 대시보드</h1>
+      <span class="date">2026.06.15</span>
+    </div>
+
+    <div class="scroll-area">
+
+      <!-- 요약 통계 -->
+      <div class="stat-row">
+        <div class="stat-card">
+          <div class="stat-num green">6</div>
+          <div class="stat-label">피드백 완료</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-num red">1</div>
+          <div class="stat-label">미전송</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-num gray">1</div>
+          <div class="stat-label">수업 없음</div>
+        </div>
+      </div>
+
+      <!-- 교사별 현황 -->
+      <div class="card">
+        <p class="section-title">오늘 교사별 현황</p>
+
+        <!-- 박선영 완료 -->
+        <div class="teacher-row" onclick="toggleDetail('d1', 'c1')">
+          <div class="avatar av-green">박</div>
+          <div class="teacher-info">
+            <div class="teacher-name">박선영 선생님</div>
+            <div class="teacher-sub">담당 3명 · 전송 3건</div>
+          </div>
+          <span class="status-badge badge-done">완료</span>
+          <span class="chevron" id="c1">›</span>
+        </div>
+        <div class="detail-panel" id="d1">
+          <div class="detail-student">
+            <div>
+              <div class="ds-name">김지우 (초3)</div>
+              <div class="ds-feedback">챈트로 시작해서 아이가 신나게 참여했어요. 카드 활용 시 스스로 답을 맞추며 자신감을 보였습니다.</div>
+            </div>
+            <div class="ds-time">14:30</div>
+          </div>
+          <div class="detail-student">
+            <div>
+              <div class="ds-name">이서준 (초2)</div>
+              <div class="ds-feedback">오늘 교재 확장 활동에서 집중력이 높았어요. 동기부여 대화도 잘 이어졌습니다.</div>
+            </div>
+            <div class="ds-time">16:10</div>
+          </div>
+          <div class="detail-student">
+            <div>
+              <div class="ds-name">최아린 (초4)</div>
+              <div class="ds-feedback">카드 게임으로 흥미를 끌었고 관심 주제와 연결해 수업했어요.</div>
+            </div>
+            <div class="ds-time">17:00</div>
+          </div>
+        </div>
+
+        <!-- 이민정 완료 -->
+        <div class="teacher-row" onclick="toggleDetail('d2', 'c2')">
+          <div class="avatar av-green">이</div>
+          <div class="teacher-info">
+            <div class="teacher-name">이민정 선생님</div>
+            <div class="teacher-sub">담당 2명 · 전송 2건</div>
+          </div>
+          <span class="status-badge badge-done">완료</span>
+          <span class="chevron" id="c2">›</span>
+        </div>
+        <div class="detail-panel" id="d2">
+          <div class="detail-student">
+            <div>
+              <div class="ds-name">정하윤 (초1)</div>
+              <div class="ds-feedback">챈트를 처음 접했는데 굉장히 좋아했어요. 다음 수업도 기대된다고 했습니다.</div>
+            </div>
+            <div class="ds-time">15:00</div>
+          </div>
+          <div class="detail-student">
+            <div>
+              <div class="ds-name">강도현 (초3)</div>
+              <div class="ds-feedback">교재 확장 내용을 보여줬을 때 스스로 질문을 많이 했어요.</div>
+            </div>
+            <div class="ds-time">16:30</div>
+          </div>
+        </div>
+
+        <!-- 김태훈 일부완료 -->
+        <div class="teacher-row" onclick="toggleDetail('d3', 'c3')">
+          <div class="avatar av-green">김</div>
+          <div class="teacher-info">
+            <div class="teacher-name">김태훈 선생님</div>
+            <div class="teacher-sub">담당 2명 · 전송 1건</div>
+          </div>
+          <span class="status-badge badge-done">완료</span>
+          <span class="chevron" id="c3">›</span>
+        </div>
+        <div class="detail-panel" id="d3">
+          <div class="detail-student">
+            <div>
+              <div class="ds-name">오지호 (초2)</div>
+              <div class="ds-feedback">카드 활용으로 집중력을 높였고, 동기부여 마무리로 다음 수업을 기대하게 했습니다.</div>
+            </div>
+            <div class="ds-time">13:50</div>
+          </div>
+          <div class="detail-student">
+            <div>
+              <div class="ds-name">윤소희 (초5)</div>
+              <div class="ds-feedback empty">아직 피드백 미전송</div>
+            </div>
+            <div class="ds-time warn">미전송</div>
+          </div>
+        </div>
+
+        <!-- 최준호 미전송 -->
+        <div class="teacher-row">
+          <div class="avatar av-red">최</div>
+          <div class="teacher-info">
+            <div class="teacher-name">최준호 선생님</div>
+            <div class="teacher-sub">담당 2명 · 전송 0건</div>
+          </div>
+          <span class="status-badge badge-none">미전송</span>
+          <span class="chevron">›</span>
+        </div>
+
+        <!-- 정수아 수업없음 -->
+        <div class="teacher-row">
+          <div class="avatar av-gray">정</div>
+          <div class="teacher-info">
+            <div class="teacher-name">정수아 선생님</div>
+            <div class="teacher-sub">오늘 수업 없음</div>
+          </div>
+          <span class="status-badge badge-off">수업 없음</span>
+        </div>
+
+      </div>
+    </div>
+  </div>
+</div>
+
+<p class="notice">이 화면은 꼼즈앱 MVP 기획안입니다.<br>실제 앱 개발 전 검토용 시안입니다.</p>
+
+<script>
+  function toggleDetail(id, chevronId) {
+    const panel = document.getElementById(id);
+    const chevron = document.getElementById(chevronId);
+    const isOpen = panel.classList.contains('open');
+
+    document.querySelectorAll('.detail-panel').forEach(p => p.classList.remove('open'));
+    document.querySelectorAll('.chevron').forEach(c => c.style.transform = '');
+
+    if (!isOpen) {
+      panel.classList.add('open');
+      if (chevron) chevron.style.transform = 'rotate(90deg)';
+    }
+  }
+</script>
+
+</body>
+</html>
