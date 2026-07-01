@@ -1,0 +1,353 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>꼼즈앱 · 선생님별 매출현황</title>
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Noto Sans KR', sans-serif;
+  background: #F2F2F7;
+  display: flex; flex-direction: column; align-items: center;
+  padding: 24px 16px 48px; min-height: 100vh;
+}
+.preview-label { font-size: 12px; color: #8E8E93; letter-spacing: 0.05em; text-transform: uppercase; margin-bottom: 16px; font-weight: 500; }
+.phone-frame { background: #1C1C1E; border-radius: 44px; padding: 12px; width: 100%; max-width: 390px; box-shadow: 0 20px 60px rgba(0,0,0,0.2); }
+.phone-screen { background: #F2F2F7; border-radius: 36px; overflow: hidden; min-height: 700px; }
+.status-bar { background: #fff; padding: 14px 20px 8px; display: flex; justify-content: space-between; align-items: center; font-size: 12px; font-weight: 600; color: #000; }
+.topbar { background: #fff; padding: 8px 16px 12px; display: flex; align-items: center; border-bottom: 0.5px solid #E5E5EA; position: relative; }
+.back-btn { font-size: 17px; color: #007AFF; cursor: pointer; }
+.topbar h1 { font-size: 17px; font-weight: 600; color: #000; position: absolute; left: 50%; transform: translateX(-50%); white-space: nowrap; }
+
+.scroll-area { padding: 14px 12px; display: flex; flex-direction: column; gap: 12px; }
+.section-label { font-size: 11px; font-weight: 600; color: #8E8E93; text-transform: uppercase; letter-spacing: 0.06em; padding: 0 2px; }
+
+/* 요약 카드 */
+.revenue-card { background: #007AFF; border-radius: 14px; padding: 16px; }
+.revenue-date { font-size: 11px; color: rgba(255,255,255,0.7); margin-bottom: 6px; }
+.revenue-main-row { display: flex; align-items: flex-end; justify-content: space-between; }
+.revenue-amount { font-size: 28px; font-weight: 700; color: #fff; }
+.revenue-last { display: flex; flex-direction: column; align-items: flex-end; gap: 2px; }
+.revenue-last-label { font-size: 10px; color: rgba(255,255,255,0.6); }
+.revenue-last-amount { font-size: 13px; font-weight: 600; color: rgba(255,255,255,0.85); }
+
+/* 선생님 카드 */
+.teacher-card { background: #fff; border-radius: 12px; overflow: hidden; }
+.teacher-header { display: flex; align-items: center; gap: 12px; padding: 14px 16px; cursor: pointer; border-bottom: 0.5px solid transparent; transition: border-color 0.2s; }
+.teacher-header.open { border-bottom-color: #E5E5EA; }
+.avatar { width: 38px; height: 38px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 14px; font-weight: 700; flex-shrink: 0; }
+.av-blue { background: #EBF3FF; color: #007AFF; }
+.av-green { background: #E8F9EF; color: #34C759; }
+.av-purple { background: #F2EEFF; color: #7B61FF; }
+.av-orange { background: #FFF3E0; color: #FF9500; }
+.teacher-info { flex: 1; }
+.teacher-name { font-size: 15px; font-weight: 600; color: #000; }
+.teacher-students { font-size: 12px; color: #8E8E93; margin-top: 1px; }
+.teacher-revenue-right { text-align: right; }
+.teacher-revenue-amount { font-size: 15px; font-weight: 700; color: #000; }
+.teacher-revenue-change { font-size: 11px; margin-top: 2px; }
+.change-up { color: #34C759; }
+.change-same { color: #8E8E93; }
+.change-down { color: #FF3B30; }
+.chevron { font-size: 18px; color: #C7C7CC; transition: transform 0.2s; margin-left: 4px; flex-shrink: 0; }
+.chevron.open { transform: rotate(90deg); }
+
+/* 상세 */
+.detail-panel { display: none; }
+.detail-panel.open { display: block; }
+.detail-section { padding: 12px 16px; border-bottom: 0.5px solid #E5E5EA; }
+.detail-section:last-child { border-bottom: none; }
+.detail-label { font-size: 11px; font-weight: 600; color: #8E8E93; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 10px; }
+
+/* 학생 칩 */
+.student-chip-row { display: flex; flex-wrap: wrap; gap: 6px; }
+.student-chip { background: #F2F2F7; border-radius: 20px; padding: 5px 12px; font-size: 12px; color: #000; font-weight: 500; }
+
+/* 바 차트 */
+.bar-chart { display: flex; align-items: flex-end; gap: 6px; height: 72px; margin-bottom: 4px; }
+.bar-col { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 4px; height: 100%; justify-content: flex-end; }
+.bar { width: 100%; border-radius: 4px 4px 0 0; min-height: 4px; }
+.bar-blue { background: #EBF3FF; }
+.bar-current { background: #007AFF; }
+.bar-month { font-size: 10px; color: #8E8E93; }
+.bar-month.current { color: #007AFF; font-weight: 600; }
+
+/* 소통 기록 */
+.msg-thread { display: flex; flex-direction: column; gap: 8px; }
+.msg-item { border-radius: 10px; padding: 10px 12px; background: #F2F2F7; }
+.msg-from-teacher { border-left: 3px solid #007AFF; }
+.msg-from-parent { border-left: 3px solid #FF9500; }
+.msg-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 3px; }
+.msg-sender { font-size: 12px; font-weight: 600; color: #000; }
+.msg-date { font-size: 11px; color: #8E8E93; }
+.msg-student { font-size: 11px; color: #007AFF; margin-bottom: 4px; font-weight: 500; }
+.msg-text { font-size: 13px; color: #3C3C43; line-height: 1.5; }
+
+.notice { font-size: 12px; color: #8E8E93; text-align: center; margin-top: 20px; line-height: 1.6; }
+</style>
+</head>
+<body>
+
+<p class="preview-label">꼼즈앱 MVP · 선생님별 매출현황 (원장용)</p>
+
+<div class="phone-frame">
+  <div class="phone-screen">
+    <div class="status-bar">
+      <span>9:41</span>
+      <span>●●●</span>
+    </div>
+    <div class="topbar">
+      <span class="back-btn">‹ 대시보드</span>
+      <h1>선생님별 매출현황</h1>
+    </div>
+    <div class="scroll-area">
+
+      <!-- 총매출 요약 -->
+      <div class="revenue-card">
+        <div class="revenue-date">6월 15일 기준</div>
+        <div class="revenue-main-row">
+          <div class="revenue-amount">4,320,000원</div>
+          <div class="revenue-last">
+            <span class="revenue-last-label">지난달 총매출</span>
+            <span class="revenue-last-amount">3,844,000원</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="section-label">선생님별 상세</div>
+
+      <!-- 박선영 -->
+      <div class="teacher-card">
+        <div class="teacher-header" id="h1" onclick="toggleDetail('d1','c1','h1')">
+          <div class="avatar av-blue">박</div>
+          <div class="teacher-info">
+            <div class="teacher-name">박선영 선생님</div>
+            <div class="teacher-students">담당 3명</div>
+          </div>
+          <div class="teacher-revenue-right">
+            <div class="teacher-revenue-amount">480,000원</div>
+            <div class="teacher-revenue-change change-up">▲ 1명 증가</div>
+          </div>
+          <span class="chevron" id="c1">›</span>
+        </div>
+        <div class="detail-panel" id="d1">
+          <div class="detail-section">
+            <div class="detail-label">담당 학생</div>
+            <div class="student-chip-row">
+              <span class="student-chip">김지우 (초3)</span>
+              <span class="student-chip">이서준 (초2)</span>
+              <span class="student-chip">최아린 (초4)</span>
+            </div>
+          </div>
+          <div class="detail-section">
+            <div class="detail-label">월별 매출 추이</div>
+            <div class="bar-chart">
+              <div class="bar-col">
+                <div class="bar bar-blue" style="height:36px;"></div>
+                <span class="bar-month">3월</span>
+              </div>
+              <div class="bar-col">
+                <div class="bar bar-blue" style="height:44px;"></div>
+                <span class="bar-month">4월</span>
+              </div>
+              <div class="bar-col">
+                <div class="bar bar-blue" style="height:40px;"></div>
+                <span class="bar-month">5월</span>
+              </div>
+              <div class="bar-col">
+                <div class="bar bar-current" style="height:52px;"></div>
+                <span class="bar-month current">6월</span>
+              </div>
+            </div>
+          </div>
+          <div class="detail-section">
+            <div class="detail-label">소통 기록</div>
+            <div class="msg-thread">
+              <div class="msg-item msg-from-teacher">
+                <div class="msg-header">
+                  <span class="msg-sender">박선영 → 부모님</span>
+                  <span class="msg-date">06.15</span>
+                </div>
+                <div class="msg-student">김지우</div>
+                <div class="msg-text">오늘 챈트로 시작해서 아이가 신나게 참여했어요. 카드 활용 시 스스로 답을 맞추며 자신감을 보였습니다.</div>
+              </div>
+              <div class="msg-item msg-from-parent">
+                <div class="msg-header">
+                  <span class="msg-sender">부모님 → 박선영</span>
+                  <span class="msg-date">06.14</span>
+                </div>
+                <div class="msg-student">이서준</div>
+                <div class="msg-text">선생님 오늘 수업 어땠나요? 집에서 수학 얘기를 많이 하던데요!</div>
+              </div>
+              <div class="msg-item msg-from-teacher">
+                <div class="msg-header">
+                  <span class="msg-sender">박선영 → 부모님</span>
+                  <span class="msg-date">06.13</span>
+                </div>
+                <div class="msg-student">최아린</div>
+                <div class="msg-text">교재 확장 활동에서 집중력이 높았어요. 다음 시간이 기대됩니다.</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 이민정 -->
+      <div class="teacher-card">
+        <div class="teacher-header" id="h2" onclick="toggleDetail('d2','c2','h2')">
+          <div class="avatar av-green">이</div>
+          <div class="teacher-info">
+            <div class="teacher-name">이민정 선생님</div>
+            <div class="teacher-students">담당 2명</div>
+          </div>
+          <div class="teacher-revenue-right">
+            <div class="teacher-revenue-amount">320,000원</div>
+            <div class="teacher-revenue-change change-same">● 유지</div>
+          </div>
+          <span class="chevron" id="c2">›</span>
+        </div>
+        <div class="detail-panel" id="d2">
+          <div class="detail-section">
+            <div class="detail-label">담당 학생</div>
+            <div class="student-chip-row">
+              <span class="student-chip">정하윤 (초1)</span>
+              <span class="student-chip">강도현 (초3)</span>
+            </div>
+          </div>
+          <div class="detail-section">
+            <div class="detail-label">월별 매출 추이</div>
+            <div class="bar-chart">
+              <div class="bar-col">
+                <div class="bar bar-blue" style="height:40px;"></div>
+                <span class="bar-month">3월</span>
+              </div>
+              <div class="bar-col">
+                <div class="bar bar-blue" style="height:40px;"></div>
+                <span class="bar-month">4월</span>
+              </div>
+              <div class="bar-col">
+                <div class="bar bar-blue" style="height:40px;"></div>
+                <span class="bar-month">5월</span>
+              </div>
+              <div class="bar-col">
+                <div class="bar bar-current" style="height:40px;"></div>
+                <span class="bar-month current">6월</span>
+              </div>
+            </div>
+          </div>
+          <div class="detail-section">
+            <div class="detail-label">소통 기록</div>
+            <div class="msg-thread">
+              <div class="msg-item msg-from-teacher">
+                <div class="msg-header">
+                  <span class="msg-sender">이민정 → 부모님</span>
+                  <span class="msg-date">06.15</span>
+                </div>
+                <div class="msg-student">정하윤</div>
+                <div class="msg-text">챈트를 처음 접했는데 굉장히 좋아했어요. 다음 수업도 기대된다고 했습니다.</div>
+              </div>
+              <div class="msg-item msg-from-parent">
+                <div class="msg-header">
+                  <span class="msg-sender">부모님 → 이민정</span>
+                  <span class="msg-date">06.13</span>
+                </div>
+                <div class="msg-student">강도현</div>
+                <div class="msg-text">수업 시간 변경 가능할까요? 다음 주 화요일은 어려울 것 같아요.</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 김태훈 -->
+      <div class="teacher-card">
+        <div class="teacher-header" id="h3" onclick="toggleDetail('d3','c3','h3')">
+          <div class="avatar av-purple">김</div>
+          <div class="teacher-info">
+            <div class="teacher-name">김태훈 선생님</div>
+            <div class="teacher-students">담당 2명</div>
+          </div>
+          <div class="teacher-revenue-right">
+            <div class="teacher-revenue-amount">320,000원</div>
+            <div class="teacher-revenue-change change-down">▼ 1명 감소</div>
+          </div>
+          <span class="chevron" id="c3">›</span>
+        </div>
+        <div class="detail-panel" id="d3">
+          <div class="detail-section">
+            <div class="detail-label">담당 학생</div>
+            <div class="student-chip-row">
+              <span class="student-chip">오지호 (초2)</span>
+              <span class="student-chip">윤소희 (초5)</span>
+            </div>
+          </div>
+          <div class="detail-section">
+            <div class="detail-label">월별 매출 추이</div>
+            <div class="bar-chart">
+              <div class="bar-col">
+                <div class="bar bar-blue" style="height:48px;"></div>
+                <span class="bar-month">3월</span>
+              </div>
+              <div class="bar-col">
+                <div class="bar bar-blue" style="height:48px;"></div>
+                <span class="bar-month">4월</span>
+              </div>
+              <div class="bar-col">
+                <div class="bar bar-blue" style="height:48px;"></div>
+                <span class="bar-month">5월</span>
+              </div>
+              <div class="bar-col">
+                <div class="bar bar-current" style="height:34px;"></div>
+                <span class="bar-month current">6월</span>
+              </div>
+            </div>
+          </div>
+          <div class="detail-section">
+            <div class="detail-label">소통 기록</div>
+            <div class="msg-thread">
+              <div class="msg-item msg-from-teacher">
+                <div class="msg-header">
+                  <span class="msg-sender">김태훈 → 부모님</span>
+                  <span class="msg-date">06.15</span>
+                </div>
+                <div class="msg-student">오지호</div>
+                <div class="msg-text">카드 활용으로 집중력을 높였고, 동기부여 마무리로 다음 수업을 기대하게 했습니다.</div>
+              </div>
+              <div class="msg-item msg-from-parent">
+                <div class="msg-header">
+                  <span class="msg-sender">부모님 → 김태훈</span>
+                  <span class="msg-date">06.12</span>
+                </div>
+                <div class="msg-student">윤소희</div>
+                <div class="msg-text">이번 달 수업료 언제 납부하면 되나요?</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<p class="notice">이 화면은 꼼즈앱 MVP 기획안입니다.<br>실제 앱 개발 전 검토용 시안입니다.</p>
+
+<script>
+function toggleDetail(id, chevronId, headerId) {
+  const panel = document.getElementById(id);
+  const chevron = document.getElementById(chevronId);
+  const header = document.getElementById(headerId);
+  const isOpen = panel.classList.contains('open');
+  document.querySelectorAll('.detail-panel').forEach(p => p.classList.remove('open'));
+  document.querySelectorAll('.chevron').forEach(c => c.classList.remove('open'));
+  document.querySelectorAll('.teacher-header').forEach(h => h.classList.remove('open'));
+  if (!isOpen) {
+    panel.classList.add('open');
+    chevron.classList.add('open');
+    header.classList.add('open');
+  }
+}
+</script>
+</body>
+</html>

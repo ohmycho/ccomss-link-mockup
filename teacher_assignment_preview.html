@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>꼼즈앱 · 교사 배정</title>
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Noto Sans KR', sans-serif;
+  background: #F2F2F7;
+  display: flex; flex-direction: column; align-items: center;
+  padding: 24px 16px 48px; min-height: 100vh;
+}
+.preview-label { font-size: 12px; color: #8E8E93; letter-spacing: 0.05em; text-transform: uppercase; margin-bottom: 16px; font-weight: 500; }
+.phone-frame { background: #1C1C1E; border-radius: 44px; padding: 12px; width: 100%; max-width: 390px; box-shadow: 0 20px 60px rgba(0,0,0,0.2); }
+.phone-screen { background: #F2F2F7; border-radius: 36px; overflow: hidden; min-height: 700px; }
+.status-bar { background: #fff; padding: 14px 20px 8px; display: flex; justify-content: space-between; align-items: center; font-size: 12px; font-weight: 600; color: #000; }
+.topbar { background: #fff; padding: 8px 16px 12px; display: flex; align-items: center; border-bottom: 0.5px solid #E5E5EA; position: relative; }
+.back-btn { font-size: 17px; color: #007AFF; }
+.topbar h1 { font-size: 17px; font-weight: 600; color: #000; position: absolute; left: 50%; transform: translateX(-50%); }
+.add-btn { margin-left: auto; font-size: 15px; color: #007AFF; font-weight: 500; cursor: pointer; }
+.scroll-area { padding: 16px 12px; display: flex; flex-direction: column; gap: 12px; }
+.search-box { background: #fff; border-radius: 10px; padding: 10px 14px; display: flex; align-items: center; gap: 8px; }
+.search-box input { border: none; outline: none; font-size: 14px; color: #000; font-family: inherit; background: transparent; flex: 1; }
+.search-box input::placeholder { color: #C7C7CC; }
+.section-label { font-size: 12px; font-weight: 600; color: #8E8E93; letter-spacing: 0.05em; text-transform: uppercase; padding: 0 4px; }
+.teacher-card { background: #fff; border-radius: 12px; overflow: hidden; }
+.teacher-header { display: flex; align-items: center; gap: 10px; padding: 14px 16px; cursor: pointer; }
+.avatar { width: 36px; height: 36px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 600; flex-shrink: 0; }
+.av-blue { background: #EBF3FF; color: #007AFF; }
+.av-green { background: #E8F9EF; color: #34C759; }
+.av-purple { background: #F2EEFF; color: #7B61FF; }
+.teacher-info { flex: 1; }
+.teacher-name { font-size: 15px; font-weight: 600; color: #000; }
+.teacher-count { font-size: 12px; color: #8E8E93; margin-top: 1px; }
+.chevron { font-size: 18px; color: #C7C7CC; transition: transform 0.2s; }
+.chevron.open { transform: rotate(90deg); }
+.student-list { border-top: 0.5px solid #E5E5EA; display: none; }
+.student-list.open { display: block; }
+.student-row { display: flex; align-items: center; gap: 10px; padding: 11px 16px; border-bottom: 0.5px solid #E5E5EA; }
+.student-row:last-child { border-bottom: none; }
+.student-avatar { width: 28px; height: 28px; border-radius: 50%; background: #F2F2F7; display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 600; color: #8E8E93; flex-shrink: 0; }
+.student-name { font-size: 14px; color: #000; flex: 1; }
+.student-grade { font-size: 12px; color: #8E8E93; }
+.transfer-btn { font-size: 12px; color: #007AFF; background: #EBF3FF; border: none; border-radius: 8px; padding: 5px 10px; cursor: pointer; font-family: inherit; white-space: nowrap; }
+.add-student-row { display: flex; align-items: center; gap: 10px; padding: 11px 16px; cursor: pointer; }
+.add-icon { width: 28px; height: 28px; border-radius: 50%; background: #EBF3FF; display: flex; align-items: center; justify-content: center; font-size: 16px; color: #007AFF; flex-shrink: 0; }
+.add-text { font-size: 14px; color: #007AFF; }
+
+/* 모달 */
+.modal-overlay { display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.4); z-index: 100; align-items: flex-end; justify-content: center; }
+.modal-overlay.open { display: flex; }
+.modal { background: #fff; border-radius: 16px 16px 0 0; padding: 20px 16px 32px; width: 100%; max-width: 390px; }
+.modal-title { font-size: 16px; font-weight: 600; color: #000; margin-bottom: 4px; }
+.modal-sub { font-size: 13px; color: #8E8E93; margin-bottom: 16px; }
+.modal-teacher-option { display: flex; align-items: center; gap: 10px; padding: 12px; border-radius: 10px; cursor: pointer; transition: background 0.15s; margin-bottom: 6px; border: 1.5px solid transparent; }
+.modal-teacher-option.selected { background: #EBF3FF; border-color: #007AFF; }
+.modal-teacher-name { font-size: 14px; font-weight: 500; color: #000; }
+.modal-teacher-count { font-size: 12px; color: #8E8E93; }
+.modal-confirm-btn { width: 100%; padding: 14px; background: #007AFF; border: none; border-radius: 12px; color: #fff; font-size: 15px; font-weight: 600; font-family: inherit; cursor: pointer; margin-top: 8px; }
+.modal-cancel { width: 100%; padding: 10px; background: none; border: none; color: #8E8E93; font-size: 14px; font-family: inherit; cursor: pointer; margin-top: 4px; }
+.notice { font-size: 12px; color: #8E8E93; text-align: center; margin-top: 20px; line-height: 1.6; }
+</style>
+</head>
+<body>
+
+<p class="preview-label">꼼즈앱 MVP · 교사 배정 화면 (원장용)</p>
+
+<div class="phone-frame">
+  <div class="phone-screen">
+    <div class="status-bar">
+      <span>9:41</span>
+      <span>●●●</span>
+    </div>
+    <div class="topbar">
+      <span class="back-btn">‹</span>
+      <h1>교사 배정</h1>
+      <span class="add-btn">+ 교사 추가</span>
+    </div>
+    <div class="scroll-area">
+
+      <div class="search-box">
+        <span style="font-size:16px; color:#8E8E93;">🔍</span>
+        <input type="text" placeholder="학생 또는 선생님 이름 검색">
+      </div>
+
+      <div class="section-label">선생님별 담당 학생</div>
+
+      <!-- 박선영 -->
+      <div class="teacher-card">
+        <div class="teacher-header" onclick="toggleTeacher('t1')">
+          <div class="avatar av-blue">박</div>
+          <div class="teacher-info">
+            <div class="teacher-name">박선영 선생님</div>
+            <div class="teacher-count">담당 학생 3명</div>
+          </div>
+          <span class="chevron" id="ch-t1">›</span>
+        </div>
+        <div class="student-list" id="t1">
+          <div class="student-row">
+            <div class="student-avatar">김</div>
+            <span class="student-name">김지우</span>
+            <span class="student-grade">초3</span>
+            <button class="transfer-btn" onclick="openModal('김지우', '박선영')">이관</button>
+          </div>
+          <div class="student-row">
+            <div class="student-avatar">이</div>
+            <span class="student-name">이서준</span>
+            <span class="student-grade">초2</span>
+            <button class="transfer-btn" onclick="openModal('이서준', '박선영')">이관</button>
+          </div>
+          <div class="student-row">
+            <div class="student-avatar">최</div>
+            <span class="student-name">최아린</span>
+            <span class="student-grade">초4</span>
+            <button class="transfer-btn" onclick="openModal('최아린', '박선영')">이관</button>
+          </div>
+          <div class="add-student-row">
+            <div class="add-icon">+</div>
+            <span class="add-text">학생 배정 추가</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- 이민정 -->
+      <div class="teacher-card">
+        <div class="teacher-header" onclick="toggleTeacher('t2')">
+          <div class="avatar av-green">이</div>
+          <div class="teacher-info">
+            <div class="teacher-name">이민정 선생님</div>
+            <div class="teacher-count">담당 학생 2명</div>
+          </div>
+          <span class="chevron" id="ch-t2">›</span>
+        </div>
+        <div class="student-list" id="t2">
+          <div class="student-row">
+            <div class="student-avatar">정</div>
+            <span class="student-name">정하윤</span>
+            <span class="student-grade">초1</span>
+            <button class="transfer-btn" onclick="openModal('정하윤', '이민정')">이관</button>
+          </div>
+          <div class="student-row">
+            <div class="student-avatar">강</div>
+            <span class="student-name">강도현</span>
+            <span class="student-grade">초3</span>
+            <button class="transfer-btn" onclick="openModal('강도현', '이민정')">이관</button>
+          </div>
+          <div class="add-student-row">
+            <div class="add-icon">+</div>
+            <span class="add-text">학생 배정 추가</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- 김태훈 -->
+      <div class="teacher-card">
+        <div class="teacher-header" onclick="toggleTeacher('t3')">
+          <div class="avatar av-purple">김</div>
+          <div class="teacher-info">
+            <div class="teacher-name">김태훈 선생님</div>
+            <div class="teacher-count">담당 학생 2명</div>
+          </div>
+          <span class="chevron" id="ch-t3">›</span>
+        </div>
+        <div class="student-list" id="t3">
+          <div class="student-row">
+            <div class="student-avatar">오</div>
+            <span class="student-name">오지호</span>
+            <span class="student-grade">초2</span>
+            <button class="transfer-btn" onclick="openModal('오지호', '김태훈')">이관</button>
+          </div>
+          <div class="student-row">
+            <div class="student-avatar">윤</div>
+            <span class="student-name">윤소희</span>
+            <span class="student-grade">초5</span>
+            <button class="transfer-btn" onclick="openModal('윤소희', '김태훈')">이관</button>
+          </div>
+          <div class="add-student-row">
+            <div class="add-icon">+</div>
+            <span class="add-text">학생 배정 추가</span>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- 이관 모달 -->
+<div class="modal-overlay" id="modalOverlay">
+  <div class="modal">
+    <div class="modal-title" id="modalTitle">이관할 선생님 선택</div>
+    <div class="modal-sub" id="modalSub"></div>
+    <div id="modalOptions"></div>
+    <button class="modal-confirm-btn" onclick="confirmTransfer()">이관 확정</button>
+    <button class="modal-cancel" onclick="closeModal()">취소</button>
+  </div>
+</div>
+
+<p class="notice">이 화면은 꼼즈앱 MVP 기획안입니다.<br>실제 앱 개발 전 검토용 시안입니다.</p>
+
+<script>
+const teachers = [
+  { name: '박선영', count: 3, color: 'av-blue' },
+  { name: '이민정', count: 2, color: 'av-green' },
+  { name: '김태훈', count: 2, color: 'av-purple' },
+];
+
+let currentStudent = '';
+let currentTeacher = '';
+let selectedTeacher = '';
+
+function toggleTeacher(id) {
+  const list = document.getElementById(id);
+  const ch = document.getElementById('ch-' + id);
+  const isOpen = list.classList.contains('open');
+  document.querySelectorAll('.student-list').forEach(l => l.classList.remove('open'));
+  document.querySelectorAll('.chevron').forEach(c => c.classList.remove('open'));
+  if (!isOpen) {
+    list.classList.add('open');
+    ch.classList.add('open');
+  }
+}
+
+function openModal(student, fromTeacher) {
+  currentStudent = student;
+  currentTeacher = fromTeacher;
+  selectedTeacher = '';
+  document.getElementById('modalTitle').textContent = student + ' 이관';
+  document.getElementById('modalSub').textContent = fromTeacher + ' 선생님 → 새 선생님으로 변경';
+  const opts = document.getElementById('modalOptions');
+  opts.innerHTML = teachers
+    .filter(t => t.name !== fromTeacher)
+    .map(t => `
+      <div class="modal-teacher-option" onclick="selectTeacher(this, '${t.name}')">
+        <div class="avatar ${t.color}">${t.name[0]}</div>
+        <div>
+          <div class="modal-teacher-name">${t.name} 선생님</div>
+          <div class="modal-teacher-count">현재 담당 ${t.count}명</div>
+        </div>
+      </div>
+    `).join('');
+  document.getElementById('modalOverlay').classList.add('open');
+}
+
+function selectTeacher(el, name) {
+  document.querySelectorAll('.modal-teacher-option').forEach(o => o.classList.remove('selected'));
+  el.classList.add('selected');
+  selectedTeacher = name;
+}
+
+function confirmTransfer() {
+  if (!selectedTeacher) { alert('선생님을 선택해 주세요.'); return; }
+  closeModal();
+  alert('✓ ' + currentStudent + ' → ' + selectedTeacher + ' 선생님으로 이관됐어요.');
+}
+
+function closeModal() {
+  document.getElementById('modalOverlay').classList.remove('open');
+}
+</script>
+</body>
+</html>
