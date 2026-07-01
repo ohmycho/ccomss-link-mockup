@@ -1,0 +1,294 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>꼼즈앱 · 셀프체크 및 메모</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Noto Sans KR', sans-serif;
+    background: #F2F2F7;
+    display: flex; flex-direction: column; align-items: center;
+    padding: 24px 16px 48px; min-height: 100vh;
+  }
+  .preview-label { font-size: 12px; color: #8E8E93; letter-spacing: 0.05em; text-transform: uppercase; margin-bottom: 16px; font-weight: 500; }
+  .phone-frame { background: #1C1C1E; border-radius: 44px; padding: 12px; width: 100%; max-width: 390px; box-shadow: 0 20px 60px rgba(0,0,0,0.2); }
+  .phone-screen { background: #F2F2F7; border-radius: 36px; overflow: hidden; min-height: 700px; }
+  .status-bar { background: #fff; padding: 14px 20px 8px; display: flex; justify-content: space-between; align-items: center; font-size: 12px; font-weight: 600; color: #000; }
+  .topbar { background: #fff; padding: 8px 16px 12px; display: flex; align-items: center; border-bottom: 0.5px solid #E5E5EA; position: relative; }
+  .back-btn { font-size: 17px; color: #007AFF; cursor: pointer; }
+  .topbar h1 { font-size: 17px; font-weight: 600; color: #000; position: absolute; left: 50%; transform: translateX(-50%); white-space: nowrap; }
+
+  .scroll-area { padding: 16px 12px; display: flex; flex-direction: column; gap: 12px; }
+  .card { background: #fff; border-radius: 12px; padding: 14px 16px; }
+  .section-title { font-size: 11px; font-weight: 600; color: #8E8E93; text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 10px; }
+
+  /* 주차 배지 */
+  .week-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 4px; }
+  .week-badge { font-size: 13px; font-weight: 600; color: #007AFF; background: #EBF3FF; padding: 4px 10px; border-radius: 20px; }
+  .week-sub { font-size: 12px; color: #8E8E93; }
+
+  /* 공유 안내 */
+  .private-note {
+    font-size: 12px; color: #8E8E93; background: #F2F2F7;
+    border-radius: 6px; padding: 6px 10px; margin-bottom: 14px;
+    display: flex; align-items: center; gap: 5px;
+  }
+
+  /* 5점 척도 항목 */
+  .scale-item { padding: 12px 0; border-bottom: 0.5px solid #E5E5EA; }
+  .scale-item:last-of-type { border-bottom: none; }
+  .scale-num-label { display: flex; align-items: flex-start; gap: 8px; margin-bottom: 10px; }
+  .scale-num { width: 20px; height: 20px; border-radius: 50%; background: #F2F2F7; display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 600; color: #8E8E93; flex-shrink: 0; margin-top: 1px; }
+  .scale-text { font-size: 14px; color: #000; line-height: 1.4; }
+  .scale-dots { display: flex; gap: 6px; padding-left: 28px; }
+  .dot-btn {
+    width: 34px; height: 34px; border-radius: 50%; border: 1.5px solid #E5E5EA;
+    background: #fff; font-size: 13px; font-weight: 600; color: #8E8E93;
+    cursor: pointer; display: flex; align-items: center; justify-content: center;
+    transition: all 0.15s;
+  }
+  .dot-btn.selected { border-color: #007AFF; background: #007AFF; color: #fff; }
+  .dot-label { display: flex; justify-content: space-between; padding-left: 28px; margin-top: 4px; }
+  .dot-label span { font-size: 10px; color: #C7C7CC; }
+
+  /* 서술형 항목 */
+  .text-item { padding: 12px 0; border-bottom: 0.5px solid #E5E5EA; }
+  .text-item:last-child { border-bottom: none; }
+  .text-num-label { display: flex; align-items: flex-start; gap: 8px; margin-bottom: 8px; }
+
+  textarea {
+    width: 100%; background: #F2F2F7; border: none;
+    border-radius: 8px; padding: 10px 12px;
+    font-size: 14px; color: #000; font-family: inherit;
+    line-height: 1.6; resize: none; outline: none;
+  }
+  textarea::placeholder { color: #C7C7CC; }
+  textarea.short { min-height: 72px; }
+  textarea.long { min-height: 110px; }
+
+  /* 미완료 알림 배너 */
+  .overdue-banner {
+    background: #FF3B30; border-radius: 10px; padding: 10px 14px;
+    display: flex; align-items: center; gap: 10px;
+    font-size: 13px; color: #fff; font-weight: 500; line-height: 1.4;
+  }
+
+  /* 진행 바 */
+  .progress-wrap { background: #F2F2F7; border-radius: 4px; height: 5px; margin-top: 14px; overflow: hidden; }
+  .progress-bar { height: 100%; border-radius: 4px; background: #007AFF; width: 0%; transition: width 0.3s; }
+  .progress-label { font-size: 12px; color: #8E8E93; margin-top: 5px; text-align: right; }
+
+  .save-btn {
+    width: 100%; padding: 15px; background: #007AFF; border: none; border-radius: 12px;
+    color: #fff; font-size: 16px; font-weight: 600; font-family: inherit;
+    cursor: pointer; transition: opacity 0.2s, background 0.2s;
+  }
+  .save-btn:active { opacity: 0.85; }
+  .save-btn.saved { background: #34C759; }
+
+  .notice { font-size: 12px; color: #8E8E93; text-align: center; margin-top: 20px; line-height: 1.6; }
+</style>
+</head>
+<body>
+
+<p class="preview-label">꼼즈앱 MVP · 셀프체크 및 메모 (교사용)</p>
+
+<div class="phone-frame">
+  <div class="phone-screen">
+
+    <div class="status-bar">
+      <span>9:41</span>
+      <span>●●●</span>
+    </div>
+
+    <div class="topbar">
+      <span class="back-btn">‹ 내 수업</span>
+      <h1>셀프체크 및 메모</h1>
+    </div>
+
+    <div class="scroll-area">
+
+      <!-- 미완료 알림 (일주일 경과 시) -->
+      <div class="overdue-banner" id="overdueBanner">
+        <span style="font-size:18px;flex-shrink:0">⏰</span>
+        <span>지난주 셀프체크가 아직 미완료예요.<br>지금 작성해 주세요!</span>
+      </div>
+
+      <!-- 주차 안내 -->
+      <div class="card">
+        <div class="week-header">
+          <span class="week-badge">6월 3주차</span>
+          <span class="week-sub">6.16(월) — 6.22(일)</span>
+        </div>
+        <p style="font-size:12px;color:#8E8E93;margin-top:6px;">매주 수요일 작성 · 원장님께 공개되지 않아요</p>
+      </div>
+
+      <!-- 셀프체크 (1~6번 — 5점 척도) -->
+      <div class="card">
+        <div class="section-title">셀프체크</div>
+        <div class="private-note">🔒 이 내용은 선생님 본인만 확인해요</div>
+
+        <!-- 1 -->
+        <div class="scale-item">
+          <div class="scale-num-label">
+            <div class="scale-num">1</div>
+            <span class="scale-text">체트(교구)를 이 주에 어느 정도 사용했나요?</span>
+          </div>
+          <div class="scale-dots" id="s1">
+            <button class="dot-btn" onclick="selectDot(1,1)">1</button>
+            <button class="dot-btn" onclick="selectDot(1,2)">2</button>
+            <button class="dot-btn" onclick="selectDot(1,3)">3</button>
+            <button class="dot-btn" onclick="selectDot(1,4)">4</button>
+            <button class="dot-btn" onclick="selectDot(1,5)">5</button>
+          </div>
+          <div class="dot-label"><span>거의 안 씀</span><span>적극 활용</span></div>
+        </div>
+
+        <!-- 2 -->
+        <div class="scale-item">
+          <div class="scale-num-label">
+            <div class="scale-num">2</div>
+            <span class="scale-text">카드를 최대한 활용했나요?</span>
+          </div>
+          <div class="scale-dots" id="s2">
+            <button class="dot-btn" onclick="selectDot(2,1)">1</button>
+            <button class="dot-btn" onclick="selectDot(2,2)">2</button>
+            <button class="dot-btn" onclick="selectDot(2,3)">3</button>
+            <button class="dot-btn" onclick="selectDot(2,4)">4</button>
+            <button class="dot-btn" onclick="selectDot(2,5)">5</button>
+          </div>
+          <div class="dot-label"><span>거의 안 씀</span><span>최대 활용</span></div>
+        </div>
+
+        <!-- 3 -->
+        <div class="scale-item">
+          <div class="scale-num-label">
+            <div class="scale-num">3</div>
+            <span class="scale-text">아이의 관심사를 학습으로 연결했나요?</span>
+          </div>
+          <div class="scale-dots" id="s3">
+            <button class="dot-btn" onclick="selectDot(3,1)">1</button>
+            <button class="dot-btn" onclick="selectDot(3,2)">2</button>
+            <button class="dot-btn" onclick="selectDot(3,3)">3</button>
+            <button class="dot-btn" onclick="selectDot(3,4)">4</button>
+            <button class="dot-btn" onclick="selectDot(3,5)">5</button>
+          </div>
+          <div class="dot-label"><span>전혀 못함</span><span>잘 연결함</span></div>
+        </div>
+
+        <!-- 4 -->
+        <div class="scale-item">
+          <div class="scale-num-label">
+            <div class="scale-num">4</div>
+            <span class="scale-text">교재 내용을 확장해서 수업했나요?</span>
+          </div>
+          <div class="scale-dots" id="s4">
+            <button class="dot-btn" onclick="selectDot(4,1)">1</button>
+            <button class="dot-btn" onclick="selectDot(4,2)">2</button>
+            <button class="dot-btn" onclick="selectDot(4,3)">3</button>
+            <button class="dot-btn" onclick="selectDot(4,4)">4</button>
+            <button class="dot-btn" onclick="selectDot(4,5)">5</button>
+          </div>
+          <div class="dot-label"><span>교재만 진행</span><span>충분히 확장</span></div>
+        </div>
+
+        <!-- 5 -->
+        <div class="scale-item">
+          <div class="scale-num-label">
+            <div class="scale-num">5</div>
+            <span class="scale-text">아이에게 수학 동기부여를 주었나요?</span>
+          </div>
+          <div class="scale-dots" id="s5">
+            <button class="dot-btn" onclick="selectDot(5,1)">1</button>
+            <button class="dot-btn" onclick="selectDot(5,2)">2</button>
+            <button class="dot-btn" onclick="selectDot(5,3)">3</button>
+            <button class="dot-btn" onclick="selectDot(5,4)">4</button>
+            <button class="dot-btn" onclick="selectDot(5,5)">5</button>
+          </div>
+          <div class="dot-label"><span>거의 못 줌</span><span>충분히 줌</span></div>
+        </div>
+
+        <!-- 6 -->
+        <div class="scale-item">
+          <div class="scale-num-label">
+            <div class="scale-num">6</div>
+            <span class="scale-text">교재 내용을 충분히 숙지하고 수업에 임했나요?</span>
+          </div>
+          <div class="scale-dots" id="s6">
+            <button class="dot-btn" onclick="selectDot(6,1)">1</button>
+            <button class="dot-btn" onclick="selectDot(6,2)">2</button>
+            <button class="dot-btn" onclick="selectDot(6,3)">3</button>
+            <button class="dot-btn" onclick="selectDot(6,4)">4</button>
+            <button class="dot-btn" onclick="selectDot(6,5)">5</button>
+          </div>
+          <div class="dot-label"><span>준비 부족</span><span>충분히 준비</span></div>
+        </div>
+
+        <div class="progress-wrap">
+          <div class="progress-bar" id="scaleProgress"></div>
+        </div>
+        <div class="progress-label" id="scaleLabel">0 / 6 완료</div>
+      </div>
+
+      <!-- 서술형 (7~8번) -->
+      <div class="card">
+        <div class="section-title">이번 주 메모</div>
+
+        <!-- 7 -->
+        <div class="text-item">
+          <div class="text-num-label">
+            <div class="scale-num">7</div>
+            <span class="scale-text">만족했던 수업 / 아쉬웠던 수업을 학생 이름과 함께 적어보세요.</span>
+          </div>
+          <textarea class="short" placeholder="예) 지우 — 카드 활용했더니 집중력이 확 올라갔어요. 서준 — 확장 수업이 너무 어려웠던 것 같아요."></textarea>
+        </div>
+
+        <!-- 8 -->
+        <div class="text-item">
+          <div class="text-num-label">
+            <div class="scale-num">8</div>
+            <span class="scale-text">학생별 특이사항이 있으면 메모해 두세요. (선택)</span>
+          </div>
+          <textarea class="long" id="memoArea" placeholder="예) 아린 — 새 방법 소개했더니 많이 힘들어함. 다음 주에 천천히 다시 시도.&#10;지우 — 이번 주 많이 밝아진 느낌. 칭찬 효과 있는 듯."></textarea>
+        </div>
+      </div>
+
+      <button class="save-btn" id="saveBtn" onclick="trySave()">이번 주 셀프체크 저장</button>
+
+    </div>
+  </div>
+</div>
+
+<p class="notice">이 화면은 꼼즈앱 MVP 기획안입니다.<br>실제 앱 개발 전 검토용 시안입니다.</p>
+
+<script>
+  const scores = [0,0,0,0,0,0];
+
+  function selectDot(item, val) {
+    scores[item-1] = val;
+    const wrap = document.getElementById('s' + item);
+    wrap.querySelectorAll('.dot-btn').forEach((btn, i) => {
+      btn.classList.toggle('selected', i + 1 === val);
+    });
+    updateProgress();
+  }
+
+  function updateProgress() {
+    const done = scores.filter(v => v > 0).length;
+    document.getElementById('scaleProgress').style.width = (done / 6 * 100) + '%';
+    document.getElementById('scaleLabel').textContent = done + ' / 6 완료';
+  }
+
+  function trySave() {
+    const btn = document.getElementById('saveBtn');
+    btn.textContent = '✓ 저장 완료!';
+    btn.classList.add('saved');
+    btn.disabled = true;
+    document.getElementById('overdueBanner').style.display = 'none';
+  }
+</script>
+
+</body>
+</html>

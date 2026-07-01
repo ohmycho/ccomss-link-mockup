@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>꼼즈앱 MVP 시안</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Noto Sans KR', sans-serif;
+    background: #F2F2F7; min-height: 100vh;
+    padding: 40px 20px; display: flex; flex-direction: column; align-items: center;
+  }
+  .header { text-align: center; margin-bottom: 32px; }
+  .header .tag { font-size: 12px; font-weight: 600; color: #007AFF; letter-spacing: 0.08em; text-transform: uppercase; margin-bottom: 8px; }
+  .header h1 { font-size: 24px; font-weight: 700; color: #000; margin-bottom: 6px; }
+  .header p { font-size: 14px; color: #8E8E93; line-height: 1.6; }
+
+  .update-badge {
+    background: #E8F9EF; color: #1E8A3E; font-size: 12px; font-weight: 600;
+    padding: 4px 12px; border-radius: 20px; margin-bottom: 24px;
+    display: inline-block;
+  }
+
+  .cards { width: 100%; max-width: 400px; display: flex; flex-direction: column; gap: 12px; }
+
+  .card {
+    background: #fff; border-radius: 16px; padding: 20px;
+    text-decoration: none; display: flex; align-items: center; gap: 16px;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.06);
+    transition: transform 0.15s, box-shadow 0.15s;
+    position: relative;
+  }
+  .card:active { transform: scale(0.98); box-shadow: 0 1px 6px rgba(0,0,0,0.08); }
+
+  .updated-dot {
+    position: absolute; top: 16px; right: 16px;
+    width: 8px; height: 8px; border-radius: 50%; background: #34C759;
+  }
+
+  .icon {
+    width: 48px; height: 48px; border-radius: 12px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 22px; flex-shrink: 0;
+  }
+
+  .card-info { flex: 1; }
+  .card-num { font-size: 11px; font-weight: 600; color: #8E8E93; letter-spacing: 0.06em; text-transform: uppercase; margin-bottom: 3px; }
+  .card-title { font-size: 16px; font-weight: 600; color: #000; margin-bottom: 3px; }
+  .card-desc { font-size: 13px; color: #8E8E93; }
+
+  .arrow { font-size: 20px; color: #C7C7CC; }
+
+  .section-divider { font-size: 11px; font-weight: 600; color: #8E8E93; text-transform: uppercase; letter-spacing: 0.06em; width: 100%; max-width: 400px; padding: 4px 4px 4px; margin-top: 8px; }
+
+  .footer { margin-top: 32px; font-size: 12px; color: #C7C7CC; text-align: center; line-height: 1.8; }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="tag">꼼즈앱 MVP</div>
+  <h1>화면 시안 모음</h1>
+  <p>각 화면을 눌러서 확인해 주세요.<br>버튼과 토글을 직접 눌러볼 수 있습니다.</p>
+</div>
+
+<span class="update-badge">✓ 2차 미팅 반영 완료 (2026.06.22)</span>
+
+<div class="cards">
+
+  <!-- 원장용 -->
+  <div class="section-divider">원장용</div>
+
+  <a class="card" href="main_dashboard_preview.html">
+    <div class="updated-dot"></div>
+    <div class="icon" style="background:#EBF3FF;">🏠</div>
+    <div class="card-info">
+      <div class="card-num">화면 00</div>
+      <div class="card-title">원장 메인 대시보드</div>
+      <div class="card-desc">매출 · 알림 · 공지 작성 (원장용)</div>
+    </div>
+    <span class="arrow">›</span>
+  </a>
+
+  <a class="card" href="student_card_preview.html">
+    <div class="updated-dot"></div>
+    <div class="icon" style="background:#EBF3FF;">👤</div>
+    <div class="card-info">
+      <div class="card-num">화면 01</div>
+      <div class="card-title">상담 카드</div>
+      <div class="card-desc">인적사항 · 학업능력 · 방문상담 + 학부모 체크</div>
+    </div>
+    <span class="arrow">›</span>
+  </a>
+
+  <a class="card" href="dashboard_preview.html">
+    <div class="icon" style="background:#F2EEFF;">📋</div>
+    <div class="card-info">
+      <div class="card-num">화면 03</div>
+      <div class="card-title">선생님 관리</div>
+      <div class="card-desc">교사별 현황 모니터링 (원장용)</div>
+    </div>
+    <span class="arrow">›</span>
+  </a>
+
+  <a class="card" href="teacher_assignment_preview.html">
+    <div class="icon" style="background:#F2EEFF;">👩‍🏫</div>
+    <div class="card-info">
+      <div class="card-num">화면 05</div>
+      <div class="card-title">교사 배정</div>
+      <div class="card-desc">학생 배정 · 담당 변경 · 이관 (원장용)</div>
+    </div>
+    <span class="arrow">›</span>
+  </a>
+
+  <a class="card" href="teacher_revenue_preview.html">
+    <div class="icon" style="background:#E8F9EF;">💰</div>
+    <div class="card-info">
+      <div class="card-num">화면 06</div>
+      <div class="card-title">선생님별 상세</div>
+      <div class="card-desc">담당 학생 · 매출현황 (원장용)</div>
+    </div>
+    <span class="arrow">›</span>
+  </a>
+
+  <!-- 선생님용 -->
+  <div class="section-divider">선생님용</div>
+
+  <a class="card" href="teacher_dashboard_preview.html">
+    <div class="updated-dot"></div>
+    <div class="icon" style="background:#E8F9EF;">👩‍💼</div>
+    <div class="card-info">
+      <div class="card-num">화면 07</div>
+      <div class="card-title">선생님 메인 대시보드</div>
+      <div class="card-desc">공지 · 셀프체크 · 오늘 수업 (선생님용)</div>
+    </div>
+    <span class="arrow">›</span>
+  </a>
+
+  <a class="card" href="daily_feedback_preview.html">
+    <div class="updated-dot"></div>
+    <div class="icon" style="background:#E8F9EF;">✏️</div>
+    <div class="card-info">
+      <div class="card-num">화면 02</div>
+      <div class="card-title">셀프체크 및 메모</div>
+      <div class="card-desc">주 1회 · 5점 척도 6항목 · 학생 메모 (선생님용)</div>
+    </div>
+    <span class="arrow">›</span>
+  </a>
+
+  <a class="card" href="schedule_change_preview.html">
+    <div class="icon" style="background:#FFF3E0;">📅</div>
+    <div class="card-info">
+      <div class="card-num">화면 04</div>
+      <div class="card-title">스케줄 변경</div>
+      <div class="card-desc">월 1회 제한 · 2가지 옵션 제시 (선생님용)</div>
+    </div>
+    <span class="arrow">›</span>
+  </a>
+
+</div>
+
+<div class="footer">
+  실제 앱 개발 전 검토용 시안입니다.<br>
+  수정이 필요한 부분은 말씀해 주세요.
+</div>
+
+</body>
+</html>

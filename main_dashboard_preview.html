@@ -1,0 +1,324 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>꼼즈앱 · 원장 메인 대시보드</title>
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Noto Sans KR', sans-serif;
+  background: #F2F2F7; display: flex; flex-direction: column; align-items: center;
+  padding: 24px 16px 48px; min-height: 100vh;
+}
+.preview-label { font-size: 12px; color: #8E8E93; letter-spacing: 0.05em; text-transform: uppercase; margin-bottom: 16px; font-weight: 500; }
+.phone-frame { background: #1C1C1E; border-radius: 44px; padding: 12px; width: 100%; max-width: 390px; box-shadow: 0 20px 60px rgba(0,0,0,0.2); }
+.phone-screen { background: #F2F2F7; border-radius: 36px; overflow: hidden; min-height: 700px; }
+.status-bar { background: #fff; padding: 14px 20px 8px; display: flex; justify-content: space-between; align-items: center; font-size: 12px; font-weight: 600; color: #000; }
+
+.topbar { background: #fff; padding: 14px 16px 12px; display: flex; align-items: center; justify-content: space-between; border-bottom: 0.5px solid #E5E5EA; }
+.topbar-greeting { font-size: 13px; color: #8E8E93; }
+.topbar-name { font-size: 18px; font-weight: 700; color: #000; margin-top: 1px; }
+.topbar-date { font-size: 12px; color: #8E8E93; margin-top: 2px; }
+.avatar-wrap { width: 38px; height: 38px; border-radius: 50%; background: #EBF3FF; display: flex; align-items: center; justify-content: center; font-size: 15px; font-weight: 700; color: #007AFF; flex-shrink: 0; }
+
+.scroll-area { padding: 14px 12px; display: flex; flex-direction: column; gap: 12px; }
+.section-label { font-size: 11px; font-weight: 600; color: #8E8E93; text-transform: uppercase; letter-spacing: 0.06em; padding: 0 2px; }
+
+.revenue-card { background: #007AFF; border-radius: 14px; padding: 16px; cursor: pointer; }
+.revenue-date { font-size: 11px; color: rgba(255,255,255,0.7); margin-bottom: 6px; }
+.revenue-main-row { display: flex; align-items: flex-end; justify-content: space-between; }
+.revenue-amount { font-size: 26px; font-weight: 700; color: #fff; }
+.revenue-last { display: flex; flex-direction: column; align-items: flex-end; gap: 2px; }
+.revenue-last-label { font-size: 10px; color: rgba(255,255,255,0.6); }
+.revenue-last-amount { font-size: 13px; font-weight: 600; color: rgba(255,255,255,0.85); }
+.revenue-link { font-size: 12px; color: rgba(255,255,255,0.8); margin-top: 10px; text-align: right; }
+
+.two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.stat-card { background: #fff; border-radius: 12px; padding: 13px 14px; }
+.stat-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
+.stat-icon { font-size: 18px; }
+.stat-badge { font-size: 11px; font-weight: 600; padding: 2px 7px; border-radius: 20px; }
+.badge-red { background: #FFEBEA; color: #FF3B30; }
+.stat-num { font-size: 22px; font-weight: 700; color: #000; }
+.stat-label { font-size: 11px; color: #8E8E93; margin-top: 2px; }
+.stat-sub { font-size: 11px; color: #8E8E93; margin-top: 6px; }
+
+/* 알림 카드 */
+.alert-card { background: #fff; border-radius: 12px; overflow: hidden; }
+.alert-row { display: flex; align-items: center; gap: 12px; padding: 13px 14px; border-bottom: 0.5px solid #E5E5EA; cursor: pointer; }
+.alert-row:last-child { border-bottom: none; }
+.alert-icon-wrap { width: 36px; height: 36px; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 17px; flex-shrink: 0; }
+.icon-red { background: #FFEBEA; }
+.icon-orange { background: #FFF3E0; }
+.icon-blue { background: #EBF3FF; }
+.icon-green { background: #E8F9EF; }
+.icon-purple { background: #F2EEFF; }
+.alert-info { flex: 1; }
+.alert-title { font-size: 14px; font-weight: 500; color: #000; }
+.alert-sub { font-size: 12px; color: #8E8E93; margin-top: 1px; }
+.alert-count { font-size: 13px; font-weight: 700; padding: 3px 9px; border-radius: 20px; flex-shrink: 0; }
+.count-red { background: #FF3B30; color: #fff; }
+.count-orange { background: #FF9500; color: #fff; }
+.count-blue { background: #007AFF; color: #fff; }
+.chevron { font-size: 16px; color: #C7C7CC; margin-left: 4px; }
+
+/* 공지사항 섹션 */
+.notice-section-header { display: flex; align-items: center; justify-content: space-between; padding: 0 2px; }
+.notice-write-btn { font-size: 13px; font-weight: 600; color: #007AFF; cursor: pointer; }
+
+.notice-card { background: #fff; border-radius: 12px; overflow: hidden; }
+.notice-row { display: flex; align-items: flex-start; gap: 10px; padding: 12px 14px; border-bottom: 0.5px solid #E5E5EA; cursor: pointer; }
+.notice-row:last-child { border-bottom: none; }
+.notice-dot { width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0; margin-top: 5px; }
+.dot-unread { background: #007AFF; }
+.dot-read { background: #E5E5EA; }
+.notice-content { flex: 1; }
+.notice-title { font-size: 14px; font-weight: 500; color: #000; }
+.notice-meta { font-size: 12px; color: #8E8E93; margin-top: 2px; }
+.notice-chevron { font-size: 16px; color: #C7C7CC; margin-top: 2px; }
+
+/* 공지 작성 모달 */
+.modal-overlay {
+  display: none; position: fixed; inset: 0;
+  background: rgba(0,0,0,0.5); z-index: 100;
+  align-items: flex-end; justify-content: center;
+}
+.modal-overlay.open { display: flex; }
+.modal-sheet {
+  background: #fff; border-radius: 20px 20px 0 0;
+  width: 100%; max-width: 390px;
+  padding: 20px 16px 36px;
+  display: flex; flex-direction: column; gap: 14px;
+}
+.modal-handle { width: 36px; height: 4px; background: #E5E5EA; border-radius: 2px; margin: 0 auto 4px; }
+.modal-title { font-size: 17px; font-weight: 700; color: #000; }
+
+.modal-input {
+  width: 100%; border: 1px solid #E5E5EA; border-radius: 10px;
+  padding: 11px 12px; font-size: 15px; font-family: inherit;
+  color: #000; outline: none;
+}
+.modal-input:focus { border-color: #007AFF; }
+textarea.modal-input { min-height: 100px; resize: none; line-height: 1.6; }
+
+.recipients-wrap { display: flex; flex-wrap: wrap; gap: 6px; }
+.recipient-chip {
+  font-size: 13px; font-weight: 500; padding: 5px 12px; border-radius: 20px;
+  border: 1.5px solid #E5E5EA; color: #3C3C43; cursor: pointer; background: #fff;
+  transition: all 0.15s;
+}
+.recipient-chip.selected { border-color: #007AFF; background: #EBF3FF; color: #007AFF; }
+
+.link-row { display: flex; gap: 8px; align-items: center; }
+.link-prefix { font-size: 13px; color: #8E8E93; white-space: nowrap; }
+
+.modal-submit {
+  width: 100%; padding: 15px; background: #007AFF; border: none; border-radius: 12px;
+  color: #fff; font-size: 16px; font-weight: 600; font-family: inherit; cursor: pointer;
+}
+
+.notice-footer { font-size: 12px; color: #8E8E93; text-align: center; margin-top: 20px; line-height: 1.6; }
+</style>
+</head>
+<body>
+
+<p class="preview-label">꼼즈앱 MVP · 원장 메인 대시보드</p>
+
+<div class="phone-frame">
+  <div class="phone-screen">
+    <div class="status-bar">
+      <span>9:41</span>
+      <span>●●●</span>
+    </div>
+
+    <div class="topbar">
+      <div>
+        <div class="topbar-greeting">안녕하세요 👋</div>
+        <div class="topbar-name">이진 원장님</div>
+        <div class="topbar-date">2026년 6월 22일 월요일</div>
+      </div>
+      <div class="avatar-wrap">이</div>
+    </div>
+
+    <div class="scroll-area">
+
+      <!-- 매출 현황 -->
+      <div class="section-label">매출 현황</div>
+      <a href="teacher_revenue_preview.html" style="text-decoration:none;">
+        <div class="revenue-card">
+          <div class="revenue-date">6월 22일 기준</div>
+          <div class="revenue-main-row">
+            <div class="revenue-amount">4,320,000원</div>
+            <div class="revenue-last">
+              <span class="revenue-last-label">지난달 총매출</span>
+              <span class="revenue-last-amount">3,844,000원</span>
+            </div>
+          </div>
+          <div class="revenue-link">선생님별 상세 보기 ›</div>
+        </div>
+      </a>
+
+      <!-- 오늘 현황 -->
+      <div class="section-label">오늘 현황</div>
+      <div class="two-col">
+        <div class="stat-card">
+          <div class="stat-header">
+            <span class="stat-icon">💳</span>
+            <span class="stat-badge badge-red">미결제 3</span>
+          </div>
+          <div class="stat-num">47</div>
+          <div class="stat-label">결제완료</div>
+          <div class="stat-sub">전체 50명 중</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-header">
+            <span class="stat-icon">📚</span>
+          </div>
+          <div class="stat-num">12</div>
+          <div class="stat-label">오늘 수업</div>
+          <div class="stat-sub">완료 10건</div>
+        </div>
+      </div>
+
+      <!-- 확인 필요 -->
+      <div class="section-label">확인 필요</div>
+      <div class="alert-card">
+        <div class="alert-row">
+          <div class="alert-icon-wrap icon-red">🔴</div>
+          <div class="alert-info">
+            <div class="alert-title">셀프체크 미완료</div>
+            <div class="alert-sub">일주일 넘긴 선생님</div>
+          </div>
+          <span class="alert-count count-red">2명</span>
+          <span class="chevron">›</span>
+        </div>
+        <div class="alert-row">
+          <div class="alert-icon-wrap icon-orange">📅</div>
+          <div class="alert-info">
+            <div class="alert-title">수업 변경 신청</div>
+            <div class="alert-sub">처리 대기 중</div>
+          </div>
+          <span class="alert-count count-orange">3건</span>
+          <span class="chevron">›</span>
+        </div>
+        <div class="alert-row">
+          <div class="alert-icon-wrap icon-blue">💬</div>
+          <div class="alert-info">
+            <div class="alert-title">부모님 메시지</div>
+            <div class="alert-sub">읽지 않은 메시지</div>
+          </div>
+          <span class="alert-count count-blue">5건</span>
+          <span class="chevron">›</span>
+        </div>
+        <div class="alert-row">
+          <div class="alert-icon-wrap icon-green">💳</div>
+          <div class="alert-info">
+            <div class="alert-title">미결제 학생</div>
+            <div class="alert-sub">이번 달 미결제</div>
+          </div>
+          <span class="alert-count count-orange">3명</span>
+          <span class="chevron">›</span>
+        </div>
+      </div>
+
+      <!-- 공지사항 -->
+      <div class="notice-section-header">
+        <div class="section-label" style="padding:0">공지사항</div>
+        <span class="notice-write-btn" onclick="openModal()">+ 새 공지</span>
+      </div>
+      <div class="notice-card">
+        <div class="notice-row">
+          <div class="notice-dot dot-unread"></div>
+          <div class="notice-content">
+            <div class="notice-title">6월 수업료 안내 및 일정 공지</div>
+            <div class="notice-meta">전체 선생님 · 오늘 09:00 · 읽음 2/4</div>
+          </div>
+          <span class="notice-chevron">›</span>
+        </div>
+        <div class="notice-row">
+          <div class="notice-dot dot-unread"></div>
+          <div class="notice-content">
+            <div class="notice-title">체트 활용법 — 네이버 블로그 공유</div>
+            <div class="notice-meta">전체 선생님 · 6월 19일 · 읽음 3/4</div>
+          </div>
+          <span class="notice-chevron">›</span>
+        </div>
+        <div class="notice-row">
+          <div class="notice-dot dot-read"></div>
+          <div class="notice-content">
+            <div class="notice-title">수요 모임 장소 변경 안내</div>
+            <div class="notice-meta">이수원, 박지현 · 6월 15일 · 읽음 2/2</div>
+          </div>
+          <span class="notice-chevron">›</span>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- 공지 작성 바텀시트 모달 -->
+<div class="modal-overlay" id="modalOverlay" onclick="closeModalOutside(event)">
+  <div class="modal-sheet">
+    <div class="modal-handle"></div>
+    <div class="modal-title">새 공지 작성</div>
+
+    <input class="modal-input" type="text" placeholder="제목" id="noticeTitle">
+
+    <textarea class="modal-input" placeholder="내용을 입력하세요." id="noticeBody"></textarea>
+
+    <div>
+      <div style="font-size:13px;font-weight:600;color:#3C3C43;margin-bottom:8px;">수신 대상</div>
+      <div class="recipients-wrap">
+        <button class="recipient-chip selected" id="chip-all" onclick="toggleChip('all')">전체 선생님</button>
+        <button class="recipient-chip" id="chip-1" onclick="toggleChip('1')">이수원</button>
+        <button class="recipient-chip" id="chip-2" onclick="toggleChip('2')">박지현</button>
+        <button class="recipient-chip" id="chip-3" onclick="toggleChip('3')">김태연</button>
+        <button class="recipient-chip" id="chip-4" onclick="toggleChip('4')">최민준</button>
+      </div>
+    </div>
+
+    <div>
+      <div style="font-size:13px;font-weight:600;color:#3C3C43;margin-bottom:8px;">링크 첨부 (선택)</div>
+      <div class="link-row">
+        <span class="link-prefix">🔗</span>
+        <input class="modal-input" type="url" placeholder="https://" id="noticeLink" style="flex:1;margin:0;">
+      </div>
+    </div>
+
+    <button class="modal-submit" onclick="submitNotice()">공지 보내기</button>
+  </div>
+</div>
+
+<p class="notice-footer">이 화면은 꼼즈앱 MVP 기획안입니다.<br>실제 앱 개발 전 검토용 시안입니다.</p>
+
+<script>
+  function openModal() {
+    document.getElementById('modalOverlay').classList.add('open');
+  }
+  function closeModalOutside(e) {
+    if (e.target === document.getElementById('modalOverlay')) {
+      document.getElementById('modalOverlay').classList.remove('open');
+    }
+  }
+  function toggleChip(id) {
+    if (id === 'all') {
+      ['all','1','2','3','4'].forEach(c => {
+        document.getElementById('chip-' + c).classList.toggle('selected', c === 'all');
+      });
+    } else {
+      document.getElementById('chip-all').classList.remove('selected');
+      document.getElementById('chip-' + id).classList.toggle('selected');
+    }
+  }
+  function submitNotice() {
+    const title = document.getElementById('noticeTitle').value.trim();
+    if (!title) { alert('제목을 입력해 주세요.'); return; }
+    document.getElementById('modalOverlay').classList.remove('open');
+    alert('공지가 전송됐어요! ✓');
+  }
+</script>
+
+</body>
+</html>
